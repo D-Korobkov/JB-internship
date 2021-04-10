@@ -95,7 +95,8 @@ public class Main {
     private static void dfs(
             final char from,
             final boolean[] used,
-            final List<Character> alphabet,Map<Character, List<Character>> graph
+            final List<Character> alphabet,
+            final Map<Character, List<Character>> graph
     ) {
         used[getIdx(from)] = true;
         for (char to : graph.get(from)) {
