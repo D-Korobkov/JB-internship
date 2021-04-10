@@ -26,13 +26,11 @@ public class Main {
         return graph;
     }
 
-    private static void fillGraph(Map<Character, List<Character>> graph) {
+    private static void fillGraph(final Map<Character, List<Character>> graph) {
         final Scanner in = new Scanner(System.in);
         int n = in.nextInt();
-        if (n <= 0) {
-            return;
-        }
         String prevName = in.next();
+
         for (int i = 1; i < n; ++i) {
             String name = in.next();
             int j = 0;
@@ -48,7 +46,7 @@ public class Main {
         }
     }
 
-    private static boolean graphContainsCycles(Map<Character, List<Character>> graph) {
+    private static boolean graphContainsCycles(final Map<Character, List<Character>> graph) {
         short[] colors = new short[27];
         for (char letter : graph.keySet()) {
             if (colors[getIdx(letter)] == 0 && check(letter, colors, graph)) {
@@ -58,7 +56,7 @@ public class Main {
         return false;
     }
 
-    private static boolean check(char from, short[] colors, Map<Character, List<Character>> graph) {
+    private static boolean check(final char from, final short[] colors, final Map<Character, List<Character>> graph) {
         colors[getIdx(from)] = 1;
         for (char to : graph.get(from)) {
             if (colors[getIdx(to)] == 1 || colors[getIdx(to)] == 0 && check(to, colors, graph)) {
@@ -69,7 +67,7 @@ public class Main {
         return false;
     }
 
-    private static List<Character> topSort(Map<Character, List<Character>> graph) {
+    private static List<Character> topSort(final Map<Character, List<Character>> graph) {
         boolean[] used = new boolean[27];
         List<Character> alphabet = new ArrayList<>();
         for (char letter : graph.keySet()) {
@@ -81,7 +79,11 @@ public class Main {
         return alphabet;
     }
 
-    private static void dfs(char from, boolean[] used, List<Character> alphabet,Map<Character, List<Character>> graph) {
+    private static void dfs(
+            final char from,
+            final boolean[] used,
+            final List<Character> alphabet,Map<Character, List<Character>> graph
+    ) {
         used[getIdx(from)] = true;
         for (char to : graph.get(from)) {
             if (!used[getIdx(to)]) {
@@ -91,7 +93,7 @@ public class Main {
         alphabet.add(from);
     }
 
-    private static int getIdx(char c) {
+    private static int getIdx(final char c) {
         return Math.max(0, c - 'a' + 1);
     }
 }

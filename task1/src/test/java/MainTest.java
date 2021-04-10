@@ -11,13 +11,6 @@ public class MainTest {
     public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().mute();
 
     @Test
-    public void test0() {
-        systemInMock.provideLines("0");
-        Main.main(null);
-        Assert.assertEquals("zyxwvutsrqponmlkjihgfedcba", systemOutRule.getLog());
-    }
-
-    @Test
     public void test1() {
         systemInMock.provideLines("1", "z");
         Main.main(null);
