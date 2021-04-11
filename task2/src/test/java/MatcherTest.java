@@ -44,9 +44,13 @@ public class MatcherTest {
         Assert.assertTrue(future.get());
     }
 
-    @Test(expected = ExecutionException.class) // stack overflow error
-    public void dumpRegexTest1() throws ExecutionException, InterruptedException {
-        Matcher.matches("a".repeat(100000), "(a|aa)+", Duration.ofSeconds(1)).get();
+    @Test(expected = StackOverflowError.class)
+    public void dumpRegexTest1() throws Throwable {
+        try {
+            Matcher.matches("a".repeat(100000), "(a|aa)+", Duration.ofSeconds(1)).get();
+        } catch (ExecutionException e) {
+            throw e.getCause();
+        }
     }
 
     @Test(expected = TimeoutException.class)
