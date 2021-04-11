@@ -2,61 +2,68 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.time.Duration;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 public class MatcherTest {
     @Test
-    public void simpleTest1() {
-        boolean result = Matcher.matches("aaa", "aaa", Duration.ofSeconds(1));
-        Assert.assertTrue(result);
+    public void simpleTest1() throws InterruptedException, ExecutionException {
+        var future = Matcher.matches("aaa", "aaa", Duration.ofSeconds(1));
+        Assert.assertTrue(future.get());
     }
 
     @Test
-    public void simpleTest2() {
-        boolean result = Matcher.matches("aaa", "aaaa", Duration.ofSeconds(1));
-        Assert.assertFalse(result);
+    public void simpleTest2() throws ExecutionException, InterruptedException {
+        var future = Matcher.matches("aaa", "aaaa", Duration.ofSeconds(1));
+        Assert.assertFalse(future.get());
     }
 
     @Test
-    public void emailRegexTest1() {
-        boolean result = Matcher.matches(
+    public void emailRegexTest1() throws ExecutionException, InterruptedException {
+        var future = Matcher.matches(
                 "user@mail.ru",
                 "^([a-z0-9_-]+\\.)*[a-z0-9_-]+@[a-z0-9_-]+(\\.[a-z0-9_-]+)*\\.[a-z]{2,6}$",
                 Duration.ofSeconds(1)
         );
-        Assert.assertTrue(result);
+        Assert.assertTrue(future.get());
     }
 
     @Test
-    public void emailRegexTest2() {
-        boolean result = Matcher.matches(
+    public void emailRegexTest2() throws ExecutionException, InterruptedException {
+        var future = Matcher.matches(
                 "dog goes woof",
                 "^([a-z0-9_-]+\\.)*[a-z0-9_-]+@[a-z0-9_-]+(\\.[a-z0-9_-]+)*\\.[a-z]{2,6}$",
                 Duration.ofSeconds(1)
         );
-        Assert.assertFalse(result);
+        Assert.assertFalse(future.get());
     }
 
     @Test
-    public void zeroTimeoutTest() {
-        boolean result = Matcher.matches("a", "a", Duration.ofSeconds(0));
-        Assert.assertFalse(result); // timeout error
+    public void smartRegexTest() throws ExecutionException, InterruptedException {
+        var future = Matcher.matches("a".repeat(100000), "a+", Duration.ofSeconds(1));
+        Assert.assertTrue(future.get());
     }
 
-    @Test
-    public void smartRegexTest() {
-        boolean result = Matcher.matches("a".repeat(100000), "a+", Duration.ofSeconds(1));
-        Assert.assertTrue(result);
+    @Test(expected = ExecutionException.class) // stack overflow error
+    public void dumpRegexTest1() throws ExecutionException, InterruptedException {
+        Matcher.matches("a".repeat(100000), "(a|aa)+", Duration.ofSeconds(1)).get();
     }
 
-    @Test
-    public void dumpRegexTest1() {
-        boolean result = Matcher.matches("a".repeat(100000), "(a|aa)+", Duration.ofSeconds(1));
-        Assert.assertFalse(result); // stack overflow error
+    @Test(expected = TimeoutException.class)
+    public void dumpRegexTest2() throws Throwable {
+        try {
+            Matcher.matches("a".repeat(100000), "^(([a-z])+.)+[A-Z]([a-z])+$", Duration.ofSeconds(1)).get();
+        } catch (ExecutionException e) {
+            throw e.getCause();
+        }
     }
 
-    @Test
-    public void dumpRegexTest2() {
-        boolean result = Matcher.matches("a".repeat(100000), "^(([a-z])+.)+[A-Z]([a-z])+$", Duration.ofSeconds(1));
-        Assert.assertFalse(result); // timeout error
+    @Test(expected = TimeoutException.class)
+    public void zeroTimeoutTest() throws Throwable {
+        try {
+            Matcher.matches("a".repeat(100000), "a+", Duration.ofSeconds(0)).get();
+        } catch (ExecutionException e) {
+            throw e.getCause();
+        }
     }
 }
